@@ -1,0 +1,4 @@
+﻿  Źródło.cpp
+C:\Users\hubci\OneDrive\Pulpit\pg\AISD\RPN_Calculator\pierwszaczki_aids1\Źródło.cpp(38,24): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\hubci\OneDrive\Pulpit\pg\AISD\RPN_Calculator\pierwszaczki_aids1\Źródło.cpp(34): warning C4715: 'getPriority': not all control paths return a value
+  pierwszaczki_aids1.vcxproj -> C:\Users\hubci\OneDrive\Pulpit\pg\AISD\RPN_Calculator\x64\Debug\pierwszaczki_aids1.exe

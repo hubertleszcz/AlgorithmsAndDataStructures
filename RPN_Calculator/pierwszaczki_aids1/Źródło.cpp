@@ -33,9 +33,97 @@ int getPriority(string token) {
 	}
 }
 
+void printEntireStack(stack<int> numbers) {
+	
+	int n = numbers.size();
+	int* tab = new int[numbers.size()];
+
+	while (!numbers.empty()) {
+		tab[numbers.size() - 1] = numbers.top();
+		numbers.pop();
+	}
+
+	for (int i = n-1; i >=0; i--) {
+		cout << tab[i] << " ";
+	}
+
+	delete[] tab;
+}
+
+
+bool arithmeticOperation(string op, stack<int>& numbers) {
+	cout << op << " ";
+	printEntireStack(numbers);
+	cout << endl;
+	int a, b;
+
+	if (op == "+") {
+		b = numbers.top();
+		numbers.pop();
+		a = numbers.top();
+		numbers.pop();
+		numbers.push(a + b);
+	}
+	else if (op == "*") {
+		b = numbers.top();
+		numbers.pop();
+		a = numbers.top();
+		numbers.pop();
+		numbers.push(a * b);
+	}
+	else if (op == "-") {
+		b = numbers.top();
+		numbers.pop();
+		a = numbers.top();
+		numbers.pop();
+		numbers.push(a - b);
+	}
+	else if (op == "/") {
+		b = numbers.top();
+		numbers.pop();
+		a = numbers.top();
+		numbers.pop();
+		if (b == 0) {
+			cout << "ERROR\n\n";
+			return false;
+		}
+
+		numbers.push(a / b);
+	}
+
+	return true;
+}
+
+void calculateRPN(queue <string> tokens) {
+	stack<int> numbers;
+	string currentToken;
+	
+	while (!tokens.empty()) {
+		currentToken = tokens.front();
+		tokens.pop();
+		if (isANumber(currentToken)) {
+			numbers.push(stoi(currentToken));
+		}
+
+		else {
+
+			if (getPriority(currentToken) <= Priority::DIVISION) {
+				if(!arithmeticOperation(currentToken, numbers)) return;
+
+			}
+
+		}
+
+	}
+	cout << numbers.top() << endl << endl;
+
+}
+
+
+
 
 //TODO:
-//1. Shunting yard algorithm with basic operators (+,-,*,/)
+//1. print entire stack
 //2. own string
 //3. own stack
 //4. own queue
@@ -70,6 +158,7 @@ void parseInfix() {
 	}
 
 	cout << endl;
+	calculateRPN(output);
 }
 
 
