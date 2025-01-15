@@ -123,7 +123,7 @@ void calculateRPN(queue <string> tokens) {
 
 
 //TODO:
-//1. print entire stack
+//1. negation operation
 //2. own string
 //3. own stack
 //4. own queue
@@ -139,8 +139,20 @@ void parseInfix() {
 			output.push(currentToken);
 			cout << currentToken << " ";
 		}
+		else if (currentToken == ")") {
+			while (!operators.empty()) {
+				if (operators.top() == "(") break;
+				else {
+					top = operators.top();
+					output.push(top);
+					cout << top << " ";
+					operators.pop();
+				}
+			}
+			operators.pop();
+		}
 		else {
-			while (!operators.empty() && getPriority(operators.top()) >= getPriority(currentToken)) {
+			while (!operators.empty() && getPriority(operators.top()) >= getPriority(currentToken) && operators.top() != "(") {
 				top = operators.top();
 				output.push(top);
 				cout << top << " ";
