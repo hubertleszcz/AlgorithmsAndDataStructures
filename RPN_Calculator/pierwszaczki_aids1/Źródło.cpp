@@ -1,4 +1,7 @@
 #include <iostream>
+#include <stack>
+#include <string>
+#include <queue>
 #include "Priorities.h"
 
 using namespace std;
@@ -32,28 +35,49 @@ int getPriority(string token) {
 
 
 //TODO:
-//1. Parse input
-//2. Shunting yard algorithm with basic operators (+,-,*,/)
-//3. own string
+//1. Shunting yard algorithm with basic operators (+,-,*,/)
+//2. own string
+//3. own stack
+//4. own queue
 void parseInfix() {
+	queue <string> output;
+	stack <string> operators;
 	string currentToken;
+	string top;
 
 	while (cin >> currentToken) {
 		if (currentToken == ".") break;
-		else if (isANumber(currentToken));
+		else if (isANumber(currentToken)) {
+			output.push(currentToken);
+			cout << currentToken << " ";
+		}
 		else {
-			cout << getPriority(currentToken) << " ";
+			while (!operators.empty() && getPriority(operators.top()) >= getPriority(currentToken)) {
+				top = operators.top();
+				output.push(top);
+				cout << top << " ";
+				operators.pop();
+			}
+			operators.push(currentToken);
 		}
 	}
+
+	while (!operators.empty()) {
+		top = operators.top();
+		output.push(top);
+		cout << top << " ";
+		operators.pop();
+	}
+
 	cout << endl;
 }
 
 
 int main() {
-	int phaseCount;
-	cin >> phaseCount;
+	int phraseCount;
+	cin >> phraseCount;
 
-	for (int i = 0; i < phaseCount; i++) {
+	for (int i = 0; i < phraseCount; i++) {
 		parseInfix();
 	}
 	while (true);
