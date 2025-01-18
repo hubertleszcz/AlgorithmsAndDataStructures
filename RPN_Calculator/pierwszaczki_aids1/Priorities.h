@@ -7,6 +7,7 @@ enum Priority {
 	DIVISION=2,
 
 	NEGATION = 3,
+	IF = 3,
 
 	LEFT_PARENTHESIS=99,
 	RIGHT_PARENTHESIS=99,

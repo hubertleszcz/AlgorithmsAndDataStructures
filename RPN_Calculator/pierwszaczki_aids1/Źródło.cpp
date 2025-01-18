@@ -53,6 +53,34 @@ void printEntireStack(stack<int> numbers) {
 	delete[] tab;
 }
 
+int stackTopAndPop(stack <int>& numbers) {
+	int a = numbers.top();
+	numbers.pop();
+	return a;
+}
+
+void functionOperations(string op, stack <int>& numbers) {
+	int a, b, c;
+	if (op == "N") {
+		a = stackTopAndPop(numbers);
+		numbers.push((-1) * a);
+	}
+	else if (op == "IF") {
+		a = stackTopAndPop(numbers);
+		
+		b = stackTopAndPop(numbers);
+
+		c = stackTopAndPop(numbers);
+	
+		if (c > 0) {
+			numbers.push(b);
+		}
+		else numbers.push(a);
+	}
+
+
+}
+
 
 bool arithmeticOperation(string op, stack<int>& numbers) {
 	cout << op << " ";
@@ -61,31 +89,23 @@ bool arithmeticOperation(string op, stack<int>& numbers) {
 	int a, b;
 
 	if (op == "+") {
-		b = numbers.top();
-		numbers.pop();
-		a = numbers.top();
-		numbers.pop();
+		b = stackTopAndPop(numbers);
+		a = stackTopAndPop(numbers);
 		numbers.push(a + b);
 	}
 	else if (op == "*") {
-		b = numbers.top();
-		numbers.pop();
-		a = numbers.top();
-		numbers.pop();
+		b = stackTopAndPop(numbers);
+		a = stackTopAndPop(numbers);
 		numbers.push(a * b);
 	}
 	else if (op == "-") {
-		b = numbers.top();
-		numbers.pop();
-		a = numbers.top();
-		numbers.pop();
+		b = stackTopAndPop(numbers);
+		a = stackTopAndPop(numbers);
 		numbers.push(a - b);
 	}
 	else if (op == "/") {
-		b = numbers.top();
-		numbers.pop();
-		a = numbers.top();
-		numbers.pop();
+		b = stackTopAndPop(numbers);
+		a = stackTopAndPop(numbers);
 		if (b == 0) {
 			cout << "ERROR\n\n";
 			return false;
@@ -93,16 +113,15 @@ bool arithmeticOperation(string op, stack<int>& numbers) {
 
 		numbers.push(a / b);
 	}
-	else if (op == "N") {
-		a = numbers.top();
-		numbers.pop();
-		numbers.push((-1) * a);
+	else {
+		functionOperations(op, numbers);
 	}
+	
 	return true;
 }
 
-bool checkRightAssoc(string op) {
-	if (op == "N") return true;
+bool isAFuntion(string op) {
+	if (op == "N" || op == "IF") return true;
 	return false;
 }
 
@@ -125,7 +144,7 @@ void basicParsing(string currentToken, stack<string>& operators, queue <string>&
 		operators.pop();
 	}
 	else {
-		while (!operators.empty() && getPriority(operators.top()) >= getPriority(currentToken) && !checkRightAssoc(currentToken) && operators.top() != "(") {
+		while (!operators.empty() && getPriority(operators.top()) >= getPriority(currentToken) && !isAFuntion(currentToken) && operators.top() != "(") {
 			top = operators.top();
 			output.push(top);
 			cout << top << " ";
@@ -166,7 +185,7 @@ void calculateRPN(queue <string> tokens) {
 
 
 //TODO:
-//1. negation operation
+//1. if operation
 //2. own string
 //3. own stack
 //4. own queue
