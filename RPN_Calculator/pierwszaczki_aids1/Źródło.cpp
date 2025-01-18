@@ -31,6 +31,9 @@ int getPriority(string token) {
 	else if (token == ")") {
 		return Priority::RIGHT_PARENTHESIS;
 	}
+	else if (token == "N") {
+		return Priority::NEGATION;
+	}
 }
 
 void printEntireStack(stack<int> numbers) {
@@ -90,9 +93,49 @@ bool arithmeticOperation(string op, stack<int>& numbers) {
 
 		numbers.push(a / b);
 	}
-
+	else if (op == "N") {
+		a = numbers.top();
+		numbers.pop();
+		numbers.push((-1) * a);
+	}
 	return true;
 }
+
+bool checkRightAssoc(string op) {
+	if (op == "N") return true;
+	return false;
+}
+
+void basicParsing(string currentToken, stack<string>& operators, queue <string>& output) {
+	string top;
+	if (isANumber(currentToken)) {
+		output.push(currentToken);
+		cout << currentToken << " ";
+	}
+	else if (currentToken == ")") {
+		while (!operators.empty()) {
+			if (operators.top() == "(") break;
+			else {
+				top = operators.top();
+				output.push(top);
+				cout << top << " ";
+				operators.pop();
+			}
+		}
+		operators.pop();
+	}
+	else {
+		while (!operators.empty() && getPriority(operators.top()) >= getPriority(currentToken) && !checkRightAssoc(currentToken) && operators.top() != "(") {
+			top = operators.top();
+			output.push(top);
+			cout << top << " ";
+			operators.pop();
+		}
+		operators.push(currentToken);
+	}
+
+}
+
 
 void calculateRPN(queue <string> tokens) {
 	stack<int> numbers;
@@ -107,7 +150,7 @@ void calculateRPN(queue <string> tokens) {
 
 		else {
 
-			if (getPriority(currentToken) <= Priority::DIVISION) {
+			if (getPriority(currentToken) <= Priority::NEGATION) {
 				if(!arithmeticOperation(currentToken, numbers)) return;
 
 			}
@@ -135,31 +178,7 @@ void parseInfix() {
 
 	while (cin >> currentToken) {
 		if (currentToken == ".") break;
-		else if (isANumber(currentToken)) {
-			output.push(currentToken);
-			cout << currentToken << " ";
-		}
-		else if (currentToken == ")") {
-			while (!operators.empty()) {
-				if (operators.top() == "(") break;
-				else {
-					top = operators.top();
-					output.push(top);
-					cout << top << " ";
-					operators.pop();
-				}
-			}
-			operators.pop();
-		}
-		else {
-			while (!operators.empty() && getPriority(operators.top()) >= getPriority(currentToken) && operators.top() != "(") {
-				top = operators.top();
-				output.push(top);
-				cout << top << " ";
-				operators.pop();
-			}
-			operators.push(currentToken);
-		}
+		basicParsing(currentToken, operators, output);
 	}
 
 	while (!operators.empty()) {
