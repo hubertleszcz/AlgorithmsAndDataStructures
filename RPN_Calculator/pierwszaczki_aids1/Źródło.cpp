@@ -6,6 +6,8 @@
 
 using namespace std;
 
+void basicParsing(string currentToken, stack<string>& operators, queue <string>& output);
+
 bool isANumber(string token) {
 	return token[0] >= '0' && token[0] <= '9';
 
@@ -34,6 +36,9 @@ int getPriority(string token) {
 	else if (token == "N") {
 		return Priority::NEGATION;
 	}
+	else if (token == "IF") {
+		return Priority::IF;
+	}
 }
 
 void printEntireStack(stack<int> numbers) {
@@ -53,8 +58,9 @@ void printEntireStack(stack<int> numbers) {
 	delete[] tab;
 }
 
-int stackTopAndPop(stack <int>& numbers) {
-	int a = numbers.top();
+template <typename T>
+T stackTopAndPop(stack <T>& numbers) {
+	T a = numbers.top();
 	numbers.pop();
 	return a;
 }
@@ -89,23 +95,23 @@ bool arithmeticOperation(string op, stack<int>& numbers) {
 	int a, b;
 
 	if (op == "+") {
-		b = stackTopAndPop(numbers);
-		a = stackTopAndPop(numbers);
+		b = stackTopAndPop<int>(numbers);
+		a = stackTopAndPop<int>(numbers);
 		numbers.push(a + b);
 	}
 	else if (op == "*") {
-		b = stackTopAndPop(numbers);
-		a = stackTopAndPop(numbers);
+		b = stackTopAndPop<int>(numbers);
+		a = stackTopAndPop<int>(numbers);
 		numbers.push(a * b);
 	}
 	else if (op == "-") {
-		b = stackTopAndPop(numbers);
-		a = stackTopAndPop(numbers);
+		b = stackTopAndPop<int>(numbers);
+		a = stackTopAndPop<int>(numbers);
 		numbers.push(a - b);
 	}
 	else if (op == "/") {
-		b = stackTopAndPop(numbers);
-		a = stackTopAndPop(numbers);
+		b = stackTopAndPop<int>(numbers);
+		a = stackTopAndPop<int>(numbers);
 		if (b == 0) {
 			cout << "ERROR\n\n";
 			return false;
@@ -121,39 +127,12 @@ bool arithmeticOperation(string op, stack<int>& numbers) {
 }
 
 bool isAFuntion(string op) {
-	if (op == "N" || op == "IF") return true;
+	if (op == "IF") return true;
 	return false;
 }
 
-void basicParsing(string currentToken, stack<string>& operators, queue <string>& output) {
-	string top;
-	if (isANumber(currentToken)) {
-		output.push(currentToken);
-		cout << currentToken << " ";
-	}
-	else if (currentToken == ")") {
-		while (!operators.empty()) {
-			if (operators.top() == "(") break;
-			else {
-				top = operators.top();
-				output.push(top);
-				cout << top << " ";
-				operators.pop();
-			}
-		}
-		operators.pop();
-	}
-	else {
-		while (!operators.empty() && getPriority(operators.top()) >= getPriority(currentToken) && !isAFuntion(currentToken) && operators.top() != "(") {
-			top = operators.top();
-			output.push(top);
-			cout << top << " ";
-			operators.pop();
-		}
-		operators.push(currentToken);
-	}
 
-}
+
 
 
 void calculateRPN(queue <string> tokens) {
@@ -169,11 +148,7 @@ void calculateRPN(queue <string> tokens) {
 
 		else {
 
-			if (getPriority(currentToken) <= Priority::NEGATION) {
-				if(!arithmeticOperation(currentToken, numbers)) return;
-
-			}
-
+			if(!arithmeticOperation(currentToken, numbers)) return;
 		}
 
 	}
@@ -185,20 +160,65 @@ void calculateRPN(queue <string> tokens) {
 
 
 //TODO:
-//1. if operation
+//1. min/max
 //2. own string
 //3. own stack
 //4. own queue
+void basicParsing( stack<string>& operators, queue <string>& output) {
+	int currentArgs = 0;
+	stack <int> functionArgs;
+	string top;
+	string currentToken;
+
+	while (true) {
+		cin >> currentToken;
+		if (currentToken == ".") break;
+
+		if (isANumber(currentToken)) {
+			output.push(currentToken);
+			cout << currentToken << " ";
+		}
+		else if (isAFuntion(currentToken)) {
+			operators.push(currentToken);
+		}
+		else if (currentToken == ",") {
+			while (operators.top() != "(") {
+				top = stackTopAndPop(operators);
+				output.push(top);
+				cout << top << " ";
+			}
+		}
+		else if (currentToken == ")") {
+			while (!operators.empty()) {
+				if (operators.top() == "(") break;
+				else {
+					top = operators.top();
+					output.push(top);
+					cout << top << " ";
+					operators.pop();
+				}
+			}
+			operators.pop();
+		}
+		else {
+			while (!operators.empty() && getPriority(operators.top()) >= getPriority(currentToken) && currentToken != "N" && operators.top() != "(") {
+				top = operators.top();
+				output.push(top);
+				cout << top << " ";
+				operators.pop();
+			}
+			operators.push(currentToken);
+		}
+	}
+}
+
 void parseInfix() {
 	queue <string> output;
 	stack <string> operators;
 	string currentToken;
 	string top;
-
-	while (cin >> currentToken) {
-		if (currentToken == ".") break;
-		basicParsing(currentToken, operators, output);
-	}
+	basicParsing(operators, output);
+	
 
 	while (!operators.empty()) {
 		top = operators.top();
