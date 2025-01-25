@@ -2,6 +2,9 @@
 #include "StackNode.h"
 #include "Token.h"
 
+/*
+* my implementation of stack data structure built on a list
+*/
 template <typename T>
 class Stack {
 private:
@@ -20,4 +23,6 @@ public:
 	bool empty();
 
 	void incrementTop();
+
+	~Stack();
 };

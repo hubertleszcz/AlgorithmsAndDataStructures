@@ -44,3 +44,10 @@ template<typename T>
 void Stack<T>::incrementTop() {
 	this->last->data++;
 }
+
+template<typename T>
+Stack<T>::~Stack() {
+	while (!this->empty()) {
+		this->pop();
+	}
+}

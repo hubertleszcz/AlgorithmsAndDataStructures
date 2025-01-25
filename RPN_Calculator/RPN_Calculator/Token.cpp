@@ -1,6 +1,7 @@
 #include "Token.h"
 
 Token::Token() {
+	memset(token, 0, sizeof(token));
 	this->length = 0;
 }
 

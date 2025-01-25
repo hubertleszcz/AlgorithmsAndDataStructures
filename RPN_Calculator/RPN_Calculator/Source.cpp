@@ -1,8 +1,6 @@
 #include <iostream>
-#include <string>
-#include <queue>
-#include <chrono>
 #include "Stack.h"
+#include "Queue.h"
 #include "Priorities.h"
 #include "Token.h"
 
@@ -14,13 +12,8 @@ using namespace std;
 * @param function - MIN or MAX token to check
 */
 int getArgs(Token function) {
-	string temp = "";
 
-	for (int i = 3; i < strlen(function.token); i++) {
-		temp += function.token[i];
-	}
-
-	return stoi(temp);
+	return atoi(function.token + 3);
 
 }
 
@@ -60,6 +53,7 @@ int getPriority(Token token) {
 	else if (token == "MAX") {
 		return Priority::MAX;
 	}
+	return 0;
 }
 
 /*
@@ -210,16 +204,16 @@ bool isAFuntion(Token op) {
 * function that calculates the expression in postfix notation
 * @param tokens - postfix expression
 */
-void calculateRPN(queue <Token> tokens) {
+void calculateRPN(Queue <Token>* tokens) {
 	Stack<int> numbers;
 	Token currentToken;
 
-	while (!tokens.empty()) {
-		currentToken = tokens.front();
-		tokens.pop();
+	while (!tokens->empty()) {
+		currentToken = tokens->front();
+		tokens->pop();
 		if (strlen(currentToken.token) == 0) break;
 		if (currentToken.isANumber()) {
-			numbers.push(stoi(currentToken.token));
+			numbers.push(atoi(currentToken.token));
 		}
 		else {
 			if (!arithmeticOperation(currentToken, &numbers)) return;
@@ -238,7 +232,7 @@ void calculateRPN(queue <Token> tokens) {
 * @param functionArgs - stack for the function arguments counts
 * @param output - postfix notation
 */
-void reduceOperators(Stack<Token>* operators, Stack<int>* functionArgs, queue<Token>& output) {
+void reduceOperators(Stack<Token>* operators, Stack<int>* functionArgs, Queue<Token>* output) {
 	int temp;
 	Token top;
 
@@ -252,7 +246,7 @@ void reduceOperators(Stack<Token>* operators, Stack<int>* functionArgs, queue<To
 		}
 	}
 
-	output.push(top);
+	output->push(top);
 	top.printToken();
 }
 
@@ -262,7 +256,7 @@ void reduceOperators(Stack<Token>* operators, Stack<int>* functionArgs, queue<To
 * @param operators - operators stack
 * @output - postfix notation expression
 */
-void shuntingYard(Stack<Token>* operators, queue <Token>& output) {
+void shuntingYard(Stack<Token>* operators, Queue <Token>* output) {
 
 	Stack <int> functionArgs;
 	Token currentToken;
@@ -273,7 +267,7 @@ void shuntingYard(Stack<Token>* operators, queue <Token>& output) {
 
 		if (currentToken.isANumber()) {
 			// for numbers just pushes the token to output
-			output.push(currentToken);
+			output->push(currentToken);
 			currentToken.printToken();
 		}
 		else if (isAFuntion(currentToken)) {
@@ -323,27 +317,20 @@ void shuntingYard(Stack<Token>* operators, queue <Token>& output) {
 * funtion that handles every infix notation expression given by user
 */
 void parseInfix() {
-	queue <Token> output;
+	Queue <Token> output;
 	Stack <Token> operators;
 
-	shuntingYard(&operators, output);
-	calculateRPN(output);
+	shuntingYard(&operators, &output);
+	calculateRPN(&output);
 }
 
-//TODO:
-//1. own queue
 
 int main() {
-	// auto start = std::chrono::high_resolution_clock::now();
 	int phraseCount;
 	cin >> phraseCount;
 
 	for (int i = 0; i < phraseCount; i++) {
 		parseInfix();
 	}
-	// auto end = std::chrono::high_resolution_clock::now();
-	// std::chrono::duration<double> duration = end - start;
-	// cout << duration.count();
-	while (true);
 	return 0;
 }
