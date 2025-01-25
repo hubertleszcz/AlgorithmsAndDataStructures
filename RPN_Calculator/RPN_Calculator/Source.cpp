@@ -3,26 +3,20 @@
 #include <string>
 #include <queue>
 #include "Priorities.h"
+#include "Token.h"
+
 
 using namespace std;
-
-/*
-* Funtion that returns true if given token is a number and false when it's not
-* @param token - token to check
-*/
-bool isANumber(string token) {
-	return token[0] >= '0' && token[0] <= '9';
-}
 
 /*
 * function that returns the argument count from MIN or MAX operations
 * @param function - MIN or MAX token to check
 */
-int getArgs(string function) {
+int getArgs(Token function) {
 	string temp = "";
 
-	for (int i = 3; i < function.length(); i++) {
-		temp += function[i];
+	for (int i = 3; i < strlen(function.token); i++) {
+		temp += function.token[i];
 	}
 
 	return stoi(temp);
@@ -33,7 +27,7 @@ int getArgs(string function) {
 * function that returns the priority of the operator or function
 * @param token - token to check
 */
-int getPriority(string token) {
+int getPriority(Token token) {
 	if (token == "+") {
 		return Priority::PLUS;
 
@@ -78,7 +72,7 @@ void printEntireStack(stack<int> numbers) {
 	stack<int> temp;
 
 	while (!numbers.empty()) {
-		cout << numbers.top() << " ";
+		printf("%d ",numbers.top());
 		temp.push(numbers.top());
 		numbers.pop();
 	}
@@ -108,7 +102,7 @@ T stackTopAndPop(stack <T>& stack) {
 * @param numbers - stack of numbers used in operations
 */
 
-void functionOperations(string op, stack <int>& numbers) {
+void functionOperations(Token op, stack <int>& numbers) {
 	int a, b, c;
 	// negation
 	if (op == "N") {
@@ -131,11 +125,11 @@ void functionOperations(string op, stack <int>& numbers) {
 		else numbers.push(a);
 	}
 
-	else if (op[0] == 'M') {
+	else if (op.token[0] == 'M') {
 
 		int arguments = getArgs(op);
 		// MIN operation
-		if (op[2] == 'N') {
+		if (op.token[2] == 'N') {
 			int min = 0x0FFFFFF0;
 			for (int i = 0; i < arguments; i++) {
 				a = stackTopAndPop(numbers);
@@ -165,10 +159,10 @@ void functionOperations(string op, stack <int>& numbers) {
 * @param op - operator
 * @param numbers - stack of numbers used in operations
 */
-bool arithmeticOperation(string op, stack<int>& numbers) {
-	std::cout << op << " ";
+bool arithmeticOperation(Token op, stack<int>& numbers) {
+	op.printToken();
 	printEntireStack(numbers);
-	std::cout << endl;
+	printf("\n");
 	int a, b;
 
 	if (op == "+") {
@@ -208,7 +202,7 @@ bool arithmeticOperation(string op, stack<int>& numbers) {
 * function that returns true if given operator is a function and false if it's not
 * @param op - operator
 */
-bool isAFuntion(string op) {
+bool isAFuntion(Token op) {
 	if (op == "IF" || op == "MIN" || op == "MAX") return true;
 	return false;
 }
@@ -217,15 +211,16 @@ bool isAFuntion(string op) {
 * function that calculates the expression in postfix notation
 * @param tokens - postfix expression
 */
-void calculateRPN(queue <string> tokens) {
+void calculateRPN(queue <Token> tokens) {
 	stack<int> numbers;
-	string currentToken;
+	Token currentToken;
 
 	while (!tokens.empty()) {
 		currentToken = tokens.front();
 		tokens.pop();
-		if (isANumber(currentToken)) {
-			numbers.push(stoi(currentToken));
+		if (strlen(currentToken.token) == 0) break;
+		if (currentToken.isANumber()) {
+			numbers.push(stoi(currentToken.token));
 		}
 		else {
 			if (!arithmeticOperation(currentToken, numbers)) return;
@@ -233,7 +228,7 @@ void calculateRPN(queue <string> tokens) {
 
 	}
 	// the result of the expression
-	std::cout << numbers.top() << endl << endl;
+	printf("%d\n", numbers.top());
 
 }
 
@@ -244,9 +239,9 @@ void calculateRPN(queue <string> tokens) {
 * @param functionArgs - stack for the function arguments counts
 * @param output - postfix notation
 */
-void reduceOperators(stack<string>& operators, stack<int>& functionArgs, queue<string>& output) {
+void reduceOperators(stack<Token>& operators, stack<int>& functionArgs, queue<Token>& output) {
 	int temp;
-	string top;
+	Token top;
 
 	top = stackTopAndPop(operators);
 
@@ -254,38 +249,37 @@ void reduceOperators(stack<string>& operators, stack<int>& functionArgs, queue<s
 		temp = stackTopAndPop(functionArgs);
 
 		if (top != "IF") {
-			top += to_string(temp);
+			top.extendTokenByNumber(temp);
 		}
 	}
 
 	output.push(top);
-	std::cout << top << " ";
+	top.printToken();
 }
 
 //TODO:
-//1. own string
-//2. own stack
-//3. own queue
-//4. optimization
+//1. own stack
+//2. own queue
+//3. optimization
 
 /*
 * function that performs the Shunting yard algorithm. Basically it creates postfix notation of expression given in infix notation
 * @param operators - operators stack
 * @output - postfix notation expression
 */
-void shuntingYard(stack<string>& operators, queue <string>& output) {
+void shuntingYard(stack<Token>& operators, queue <Token>& output) {
 
 	stack <int> functionArgs;
-	string currentToken;
+	Token currentToken;
 	while (true) {
-		cin >> currentToken;
+		currentToken.readToken();
 		// expression end
 		if (currentToken == ".") break;
 
-		if (isANumber(currentToken)) {
+		if (currentToken.isANumber()) {
 			// for numbers just pushes the token to output
 			output.push(currentToken);
-			std::cout << currentToken << " ";
+			currentToken.printToken();
 		}
 		else if (isAFuntion(currentToken)) {
 			// for functions just pushes the token to the operators stack
@@ -327,15 +321,15 @@ void shuntingYard(stack<string>& operators, queue <string>& output) {
 	while (!operators.empty()) {
 		reduceOperators(operators, functionArgs, output);
 	}
-	std::cout << endl;
+	printf("\n");
 }
 
 /*
 * funtion that handles every infix notation expression given by user
 */
 void parseInfix() {
-	queue <string> output;
-	stack <string> operators;
+	queue <Token> output;
+	stack <Token> operators;
 
 	shuntingYard(operators, output);
 	calculateRPN(output);
