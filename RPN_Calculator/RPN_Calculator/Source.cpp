@@ -57,7 +57,7 @@ int getPriority(string token) {
 }
 
 void printEntireStack(stack<int> numbers) {
-	
+
 	int n = numbers.size();
 	int* tab = new int[numbers.size()];
 
@@ -66,7 +66,7 @@ void printEntireStack(stack<int> numbers) {
 		numbers.pop();
 	}
 
-	for (int i = n-1; i >=0; i--) {
+	for (int i = n - 1; i >= 0; i--) {
 		std::cout << tab[i] << " ";
 	}
 
@@ -88,11 +88,11 @@ void functionOperations(string op, stack <int>& numbers) {
 	}
 	else if (op == "IF") {
 		a = stackTopAndPop(numbers);
-		
+
 		b = stackTopAndPop(numbers);
 
 		c = stackTopAndPop(numbers);
-	
+
 		if (c > 0) {
 			numbers.push(b);
 		}
@@ -119,7 +119,7 @@ void functionOperations(string op, stack <int>& numbers) {
 			}
 			numbers.push(max);
 		}
-		
+
 
 	}
 
@@ -160,7 +160,7 @@ bool arithmeticOperation(string op, stack<int>& numbers) {
 	else {
 		functionOperations(op, numbers);
 	}
-	
+
 	return true;
 }
 
@@ -176,7 +176,7 @@ bool isAFuntion(string op) {
 void calculateRPN(queue <string> tokens) {
 	stack<int> numbers;
 	string currentToken;
-	
+
 	while (!tokens.empty()) {
 		currentToken = tokens.front();
 		tokens.pop();
@@ -186,7 +186,7 @@ void calculateRPN(queue <string> tokens) {
 
 		else {
 
-			if(!arithmeticOperation(currentToken, numbers)) return;
+			if (!arithmeticOperation(currentToken, numbers)) return;
 		}
 
 	}
@@ -195,7 +195,23 @@ void calculateRPN(queue <string> tokens) {
 }
 
 
+void reduceOperators(stack<string>& operators, stack<int>& functionArgs, queue<string>& output) {
+	int temp;
+	string top;
 
+	top = stackTopAndPop(operators);
+
+	if (isAFuntion(top)) {
+		temp = stackTopAndPop(functionArgs);
+
+		if (top != "IF") {
+			top += to_string(temp);
+		}
+	}
+
+	output.push(top);
+	//std::cout << top << " ";
+}
 
 //TODO:
 //1. cleaner code
@@ -204,9 +220,8 @@ void calculateRPN(queue <string> tokens) {
 //4. own queue
 //5. optimization
 void basicParsing(stack<string>& operators, queue <string>& output) {
-	int temp;
+
 	stack <int> functionArgs;
-	string top;
 	string currentToken;
 	while (true) {
 		cin >> currentToken;
@@ -222,18 +237,7 @@ void basicParsing(stack<string>& operators, queue <string>& output) {
 		}
 		else if (currentToken == ",") {
 			while (operators.top() != "(") {
-				top = stackTopAndPop(operators);
-
-				if (isAFuntion(top)) {
-					temp = stackTopAndPop(functionArgs);
-
-					if (top != "IF") {
-						top += to_string(temp);
-					}
-				}
-
-				output.push(top);
-				//std::cout << top << " ";
+				reduceOperators(operators, functionArgs, output);
 			}
 			functionArgs.top()++;
 		}
@@ -241,38 +245,16 @@ void basicParsing(stack<string>& operators, queue <string>& output) {
 			while (!operators.empty()) {
 				if (operators.top() == "(") break;
 				else {
-					top = stackTopAndPop(operators);
+					reduceOperators(operators, functionArgs, output);
 
-					if (isAFuntion(top)) {
-						temp = stackTopAndPop(functionArgs);
-
-						if (top != "IF") {
-							top += to_string(temp);
-
-						}
-					}
-
-					output.push(top);
-					//std::cout << top << " ";
 				}
 			}
 			operators.pop();
 		}
 		else {
 			while (!operators.empty() && getPriority(operators.top()) >= getPriority(currentToken) && currentToken != "N" && operators.top() != "(") {
-				top = stackTopAndPop(operators);
+				reduceOperators(operators, functionArgs, output);
 
-				if (isAFuntion(top)) {
-					temp = stackTopAndPop(functionArgs);
-
-					if (top != "IF") {
-						top += to_string(temp);
-
-					}
-				}
-
-				output.push(top);
-				//std::cout << top << " ";
 			}
 			operators.push(currentToken);
 		}
@@ -280,19 +262,7 @@ void basicParsing(stack<string>& operators, queue <string>& output) {
 	}
 
 	while (!operators.empty()) {
-		top = stackTopAndPop(operators);
-
-		if (isAFuntion(top)) {
-			temp = stackTopAndPop(functionArgs);
-
-			if (top != "IF") {
-				top += to_string(temp);
-
-			}
-		}
-
-		output.push(top);
-		//std::cout << top << " ";
+		reduceOperators(operators, functionArgs, output);
 	}
 }
 
