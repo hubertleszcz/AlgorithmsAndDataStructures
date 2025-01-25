@@ -57,7 +57,7 @@ int getPriority(string token) {
 }
 
 void printEntireStack(stack<int> numbers) {
-	
+
 	int n = numbers.size();
 	int* tab = new int[numbers.size()];
 
@@ -66,7 +66,7 @@ void printEntireStack(stack<int> numbers) {
 		numbers.pop();
 	}
 
-	for (int i = n-1; i >=0; i--) {
+	for (int i = n - 1; i >= 0; i--) {
 		std::cout << tab[i] << " ";
 	}
 
@@ -88,11 +88,11 @@ void functionOperations(string op, stack <int>& numbers) {
 	}
 	else if (op == "IF") {
 		a = stackTopAndPop(numbers);
-		
+
 		b = stackTopAndPop(numbers);
 
 		c = stackTopAndPop(numbers);
-	
+
 		if (c > 0) {
 			numbers.push(b);
 		}
@@ -119,7 +119,7 @@ void functionOperations(string op, stack <int>& numbers) {
 			}
 			numbers.push(max);
 		}
-		
+
 
 	}
 
@@ -160,7 +160,7 @@ bool arithmeticOperation(string op, stack<int>& numbers) {
 	else {
 		functionOperations(op, numbers);
 	}
-	
+
 	return true;
 }
 
@@ -176,7 +176,7 @@ bool isAFuntion(string op) {
 void calculateRPN(queue <string> tokens) {
 	stack<int> numbers;
 	string currentToken;
-	
+
 	while (!tokens.empty()) {
 		currentToken = tokens.front();
 		tokens.pop();
@@ -186,7 +186,7 @@ void calculateRPN(queue <string> tokens) {
 
 		else {
 
-			if(!arithmeticOperation(currentToken, numbers)) return;
+			if (!arithmeticOperation(currentToken, numbers)) return;
 		}
 
 	}
