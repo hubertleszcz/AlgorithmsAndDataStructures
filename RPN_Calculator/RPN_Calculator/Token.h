@@ -26,6 +26,14 @@ public:
 
 	Token& operator=(Token second);
 
+	Token& operator++(){
+		return *this;
+	};
+
+	Token& operator++(int) {
+		return *this;
+	};
+
 	~Token() = default;
 
 };

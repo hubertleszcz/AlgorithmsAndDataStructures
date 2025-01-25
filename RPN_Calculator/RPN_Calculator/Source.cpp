@@ -1,7 +1,8 @@
 #include <iostream>
-#include <stack>
 #include <string>
 #include <queue>
+#include <chrono>
+#include "Stack.h"
 #include "Priorities.h"
 #include "Token.h"
 
@@ -66,19 +67,17 @@ int getPriority(Token token) {
 * param @numbers - stack to print out
 */
 
-void printEntireStack(stack<int> numbers) {
+void printEntireStack(Stack<int>* numbers) {
+	Stack<int> temp;
 
-	int n = numbers.size();
-	stack<int> temp;
-
-	while (!numbers.empty()) {
-		printf("%d ",numbers.top());
-		temp.push(numbers.top());
-		numbers.pop();
+	while (!numbers->empty()) {
+		printf("%d ",numbers->top());
+		temp.push(numbers->top());
+		numbers->pop();
 	}
 
 	while (!temp.empty()) {
-		numbers.push(temp.top());
+		numbers->push(temp.top());
 		temp.pop();
 	}
 
@@ -90,9 +89,9 @@ void printEntireStack(stack<int> numbers) {
 * @param stack - stack on which the operations are performed
 */
 template <typename T>
-T stackTopAndPop(stack <T>& stack) {
-	T a = stack.top();
-	stack.pop();
+T stackTopAndPop(Stack <T>* stack) {
+	T a = stack->top();
+	stack->pop();
 	return a;
 }
 
@@ -102,12 +101,12 @@ T stackTopAndPop(stack <T>& stack) {
 * @param numbers - stack of numbers used in operations
 */
 
-void functionOperations(Token op, stack <int>& numbers) {
+void functionOperations(Token op, Stack<int>* numbers) {
 	int a, b, c;
 	// negation
 	if (op == "N") {
 		a = stackTopAndPop(numbers);
-		numbers.push((-1) * a);
+		numbers->push((-1) * a);
 	}
 	else if (op == "IF") {
 
@@ -120,9 +119,9 @@ void functionOperations(Token op, stack <int>& numbers) {
 		c = stackTopAndPop(numbers);
 
 		if (c > 0) {
-			numbers.push(b);
+			numbers->push(b);
 		}
-		else numbers.push(a);
+		else numbers->push(a);
 	}
 
 	else if (op.token[0] == 'M') {
@@ -135,7 +134,7 @@ void functionOperations(Token op, stack <int>& numbers) {
 				a = stackTopAndPop(numbers);
 				if (a < min) min = a;
 			}
-			numbers.push(min);
+			numbers->push(min);
 		}
 		// MAX operation
 		else {
@@ -146,7 +145,7 @@ void functionOperations(Token op, stack <int>& numbers) {
 				if (a > max) max = a;
 
 			}
-			numbers.push(max);
+			numbers->push(max);
 		}
 
 
@@ -159,7 +158,7 @@ void functionOperations(Token op, stack <int>& numbers) {
 * @param op - operator
 * @param numbers - stack of numbers used in operations
 */
-bool arithmeticOperation(Token op, stack<int>& numbers) {
+bool arithmeticOperation(Token op, Stack<int>* numbers) {
 	op.printToken();
 	printEntireStack(numbers);
 	printf("\n");
@@ -168,17 +167,17 @@ bool arithmeticOperation(Token op, stack<int>& numbers) {
 	if (op == "+") {
 		b = stackTopAndPop<int>(numbers);
 		a = stackTopAndPop<int>(numbers);
-		numbers.push(a + b);
+		numbers->push(a + b);
 	}
 	else if (op == "*") {
 		b = stackTopAndPop<int>(numbers);
 		a = stackTopAndPop<int>(numbers);
-		numbers.push(a * b);
+		numbers->push(a * b);
 	}
 	else if (op == "-") {
 		b = stackTopAndPop<int>(numbers);
 		a = stackTopAndPop<int>(numbers);
-		numbers.push(a - b);
+		numbers->push(a - b);
 	}
 	else if (op == "/") {
 		b = stackTopAndPop<int>(numbers);
@@ -188,7 +187,7 @@ bool arithmeticOperation(Token op, stack<int>& numbers) {
 			return false;
 		}
 
-		numbers.push(a / b);
+		numbers->push(a / b);
 	}
 	else {
 		functionOperations(op, numbers);
@@ -212,7 +211,7 @@ bool isAFuntion(Token op) {
 * @param tokens - postfix expression
 */
 void calculateRPN(queue <Token> tokens) {
-	stack<int> numbers;
+	Stack<int> numbers;
 	Token currentToken;
 
 	while (!tokens.empty()) {
@@ -223,7 +222,7 @@ void calculateRPN(queue <Token> tokens) {
 			numbers.push(stoi(currentToken.token));
 		}
 		else {
-			if (!arithmeticOperation(currentToken, numbers)) return;
+			if (!arithmeticOperation(currentToken, &numbers)) return;
 		}
 
 	}
@@ -239,7 +238,7 @@ void calculateRPN(queue <Token> tokens) {
 * @param functionArgs - stack for the function arguments counts
 * @param output - postfix notation
 */
-void reduceOperators(stack<Token>& operators, stack<int>& functionArgs, queue<Token>& output) {
+void reduceOperators(Stack<Token>* operators, Stack<int>* functionArgs, queue<Token>& output) {
 	int temp;
 	Token top;
 
@@ -257,19 +256,15 @@ void reduceOperators(stack<Token>& operators, stack<int>& functionArgs, queue<To
 	top.printToken();
 }
 
-//TODO:
-//1. own stack
-//2. own queue
-//3. optimization
 
 /*
 * function that performs the Shunting yard algorithm. Basically it creates postfix notation of expression given in infix notation
 * @param operators - operators stack
 * @output - postfix notation expression
 */
-void shuntingYard(stack<Token>& operators, queue <Token>& output) {
+void shuntingYard(Stack<Token>* operators, queue <Token>& output) {
 
-	stack <int> functionArgs;
+	Stack <int> functionArgs;
 	Token currentToken;
 	while (true) {
 		currentToken.readToken();
@@ -283,43 +278,43 @@ void shuntingYard(stack<Token>& operators, queue <Token>& output) {
 		}
 		else if (isAFuntion(currentToken)) {
 			// for functions just pushes the token to the operators stack
-			operators.push(currentToken);
+			operators->push(currentToken);
 			functionArgs.push(1);
 		}
 		else if (currentToken == ",") {
 			// pops operators while the stack's top is not "(" and increases funtion's arguments count
-			while (operators.top() != "(") {
-				reduceOperators(operators, functionArgs, output);
+			while (operators->top() != "(") {
+				reduceOperators(operators, &functionArgs, output);
 			}
-			functionArgs.top()++;
+			functionArgs.incrementTop();
 		}
 		else if (currentToken == ")") {
 			// pops operators to output as long as the "(" is not at the stack's top
-			while (!operators.empty()) {
-				if (operators.top() == "(") break;
+			while (!operators->empty()) {
+				if (operators->top() == "(") break;
 				else {
-					reduceOperators(operators, functionArgs, output);
+					reduceOperators(operators, &functionArgs, output);
 				}
 			}
-			operators.pop();
+			operators->pop();
 		}
 		else {
 			// rest of the operators
-			while (!operators.empty() &&
-				getPriority(operators.top()) >= getPriority(currentToken) &&
+			while (!operators->empty() &&
+				getPriority(operators->top()) >= getPriority(currentToken) &&
 				currentToken != "N" && /* checks for the operator being left-associative */
-				operators.top() != "(") {
-				reduceOperators(operators, functionArgs, output);
+				operators->top() != "(") {
+				reduceOperators(operators, &functionArgs, output);
 
 			}
-			operators.push(currentToken);
+			operators->push(currentToken);
 		}
 
 	}
 	
 	// pops operators to output after the expression parsing
-	while (!operators.empty()) {
-		reduceOperators(operators, functionArgs, output);
+	while (!operators->empty()) {
+		reduceOperators(operators, &functionArgs, output);
 	}
 	printf("\n");
 }
@@ -329,20 +324,26 @@ void shuntingYard(stack<Token>& operators, queue <Token>& output) {
 */
 void parseInfix() {
 	queue <Token> output;
-	stack <Token> operators;
+	Stack <Token> operators;
 
-	shuntingYard(operators, output);
+	shuntingYard(&operators, output);
 	calculateRPN(output);
 }
 
+//TODO:
+//1. own queue
 
 int main() {
+	// auto start = std::chrono::high_resolution_clock::now();
 	int phraseCount;
 	cin >> phraseCount;
 
 	for (int i = 0; i < phraseCount; i++) {
 		parseInfix();
 	}
+	// auto end = std::chrono::high_resolution_clock::now();
+	// std::chrono::duration<double> duration = end - start;
+	// cout << duration.count();
 	while (true);
 	return 0;
 }
