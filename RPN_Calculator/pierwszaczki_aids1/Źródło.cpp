@@ -6,12 +6,21 @@
 
 using namespace std;
 
-void basicParsing(string currentToken, stack<string>& operators, queue <string>& output);
-
 bool isANumber(string token) {
 	return token[0] >= '0' && token[0] <= '9';
+}
+
+int getArgs(string function) {
+	string temp = "";
+
+	for (int i = 3; i < function.length(); i++) {
+		temp += function[i];
+	}
+
+	return stoi(temp);
 
 }
+
 
 int getPriority(string token) {
 	if (token == "+") {
@@ -39,6 +48,12 @@ int getPriority(string token) {
 	else if (token == "IF") {
 		return Priority::IF;
 	}
+	else if (token == "MIN") {
+		return Priority::MIN;
+	}
+	else if (token == "MAX") {
+		return Priority::MAX;
+	}
 }
 
 void printEntireStack(stack<int> numbers) {
@@ -52,7 +67,7 @@ void printEntireStack(stack<int> numbers) {
 	}
 
 	for (int i = n-1; i >=0; i--) {
-		cout << tab[i] << " ";
+		std::cout << tab[i] << " ";
 	}
 
 	delete[] tab;
@@ -84,14 +99,37 @@ void functionOperations(string op, stack <int>& numbers) {
 		else numbers.push(a);
 	}
 
+	else if (op[0] == 'M') {
+		int arguments = getArgs(op);
+		if (op[2] == 'N') {
+			int min = 0x0FFFFFF0;
+			for (int i = 0; i < arguments; i++) {
+				a = stackTopAndPop(numbers);
+				if (a < min) min = a;
+			}
+			numbers.push(min);
+		}
+		else {
+			int max = (-1) * 0x0FFFFFF0;
+			for (int i = 0; i < arguments; i++) {
+				a = stackTopAndPop(numbers);
+
+				if (a > max) max = a;
+
+			}
+			numbers.push(max);
+		}
+		
+
+	}
 
 }
 
 
 bool arithmeticOperation(string op, stack<int>& numbers) {
-	cout << op << " ";
-	printEntireStack(numbers);
-	cout << endl;
+	//std::cout << op << " ";
+	//printEntireStack(numbers);
+	//std::cout << endl;
 	int a, b;
 
 	if (op == "+") {
@@ -113,7 +151,7 @@ bool arithmeticOperation(string op, stack<int>& numbers) {
 		b = stackTopAndPop<int>(numbers);
 		a = stackTopAndPop<int>(numbers);
 		if (b == 0) {
-			cout << "ERROR\n\n";
+			std::cout << "ERROR\n\n";
 			return false;
 		}
 
@@ -127,7 +165,7 @@ bool arithmeticOperation(string op, stack<int>& numbers) {
 }
 
 bool isAFuntion(string op) {
-	if (op == "IF") return true;
+	if (op == "IF" || op == "MIN" || op == "MAX") return true;
 	return false;
 }
 
@@ -152,7 +190,7 @@ void calculateRPN(queue <string> tokens) {
 		}
 
 	}
-	cout << numbers.top() << endl << endl;
+	std::cout << numbers.top() << endl << endl;
 
 }
 
@@ -160,55 +198,101 @@ void calculateRPN(queue <string> tokens) {
 
 
 //TODO:
-//1. min/max
+//1. cleaner code
 //2. own string
 //3. own stack
 //4. own queue
-void basicParsing( stack<string>& operators, queue <string>& output) {
-	int currentArgs = 0;
+//5. optimization
+void basicParsing(stack<string>& operators, queue <string>& output) {
+	int temp;
 	stack <int> functionArgs;
 	string top;
 	string currentToken;
-
 	while (true) {
 		cin >> currentToken;
 		if (currentToken == ".") break;
 
 		if (isANumber(currentToken)) {
 			output.push(currentToken);
-			cout << currentToken << " ";
+			//std::cout << currentToken << " ";
 		}
 		else if (isAFuntion(currentToken)) {
 			operators.push(currentToken);
+			functionArgs.push(1);
 		}
 		else if (currentToken == ",") {
 			while (operators.top() != "(") {
 				top = stackTopAndPop(operators);
+
+				if (isAFuntion(top)) {
+					temp = stackTopAndPop(functionArgs);
+
+					if (top != "IF") {
+						top += to_string(temp);
+					}
+				}
+
 				output.push(top);
-				cout << top << " ";
+				//std::cout << top << " ";
 			}
+			functionArgs.top()++;
 		}
 		else if (currentToken == ")") {
 			while (!operators.empty()) {
 				if (operators.top() == "(") break;
 				else {
-					top = operators.top();
+					top = stackTopAndPop(operators);
+
+					if (isAFuntion(top)) {
+						temp = stackTopAndPop(functionArgs);
+
+						if (top != "IF") {
+							top += to_string(temp);
+
+						}
+					}
+
 					output.push(top);
-					cout << top << " ";
-					operators.pop();
+					//std::cout << top << " ";
 				}
 			}
 			operators.pop();
 		}
 		else {
 			while (!operators.empty() && getPriority(operators.top()) >= getPriority(currentToken) && currentToken != "N" && operators.top() != "(") {
-				top = operators.top();
+				top = stackTopAndPop(operators);
+
+				if (isAFuntion(top)) {
+					temp = stackTopAndPop(functionArgs);
+
+					if (top != "IF") {
+						top += to_string(temp);
+
+					}
+				}
+
 				output.push(top);
-				cout << top << " ";
-				operators.pop();
+				//std::cout << top << " ";
 			}
 			operators.push(currentToken);
 		}
+
+	}
+
+	while (!operators.empty()) {
+		top = stackTopAndPop(operators);
+
+		if (isAFuntion(top)) {
+			temp = stackTopAndPop(functionArgs);
+
+			if (top != "IF") {
+				top += to_string(temp);
+
+			}
+		}
+
+		output.push(top);
+		//std::cout << top << " ";
 	}
 }
 
@@ -218,16 +302,9 @@ void parseInfix() {
 	string currentToken;
 	string top;
 	basicParsing(operators, output);
-	
 
-	while (!operators.empty()) {
-		top = operators.top();
-		output.push(top);
-		cout << top << " ";
-		operators.pop();
-	}
 
-	cout << endl;
+	std::cout << endl;
 	calculateRPN(output);
 }
 
